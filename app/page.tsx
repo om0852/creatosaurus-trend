@@ -22,8 +22,8 @@ export default function Page() {
       </header>
 
       <section className="space-y-4">
-        <TrendFilters />
-        <TrendList />
+        {/* <TrendFilters />
+        <TrendList /> */}
       </section>
     </main>
   )
