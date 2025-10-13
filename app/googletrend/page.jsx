@@ -257,18 +257,7 @@ const Page = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium mb-1">
-                    Country (geo)
-                  </label>
-                  <Input
-                    name="geo"
-                    value={filters.geo}
-                    onChange={handleChange}
-                    placeholder="e.g. US, IN"
-                    disabled={filters.enableTrendingSearches}
-                  />
-                </div>
+              
 
                 <div className="flex items-center gap-2">
                   <input
@@ -281,21 +270,11 @@ const Page = () => {
                   <label className="text-xs">Fetch Regional Data</label>
                 </div>
 
-                {/* <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="enableTrendingSearches"
-                    checked={filters.enableTrendingSearches}
-                    onChange={handleChange}
-                  />
-                  <label className="text-xs">Enable Trending Searches</label>
-                </div> */}
-
                 {filters.enableTrendingSearches && (
                   <>
                     <div>
                       <label className="block text-xs font-medium mb-1">
-                        Trending Searches Country
+                        Trending Searches Country 
                       </label>
                       <Input
                         name="trendingSearchesCountry"
