@@ -4,6 +4,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, Globe2 } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   const [country, setCountry] = useState("2");
@@ -64,7 +65,9 @@ export default function Home() {
     setLoading(true);
     setTrends([]);
     try {
-      const res = await fetch(`/api/twittertrend?country=${country}&duration=${duration}`);
+      const res = await fetch(
+        `/api/twittertrend?country=${country}&duration=${duration}`
+      );
       const data = await res.json();
       setTrends(data);
     } catch (err) {
@@ -95,7 +98,9 @@ export default function Home() {
         <Card className="shadow-md border border-gray-200">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Filter Trends</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Filter Trends
+              </h3>
               <p className="text-sm text-gray-500">
                 Select country and time duration to explore real-time trends.
               </p>
@@ -192,6 +197,19 @@ export default function Home() {
                         <span className="text-sm text-gray-600 font-medium">
                           {t.volume || ""}
                         </span>
+                        <Link
+                          href={`https://x.com/search?q=${t.trend}&src=trend_click&vertical=trends`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-gray-600 font-medium"
+                        >
+                          <img
+                            width="24"
+                            height="24"
+                            src="https://img.icons8.com/badges/48/long-arrow-right.png"
+                            alt="long-arrow-right"
+                          />
+                        </Link>
                       </li>
                     ))}
                   </ul>

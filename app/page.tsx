@@ -1,30 +1,75 @@
-"use client"
-import TrendFilters from "@/components/trend-filters"
-import TrendList from "@/components/trend-list"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import React from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import GoogleNewsPage from "./googlenews/page";
+import TwitterPage from "./twittertrend/page";
+import YouTubePage from "./youtube/page";
+import GoogleExplore from "./googleexplore/page";
+import GoogleTrend from "./googletrend/page";
 
-export default function Page() {
+const DashboardPage = () => {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 md:py-8">
-      <header className="mb-6 flex flex-col items-start justify-between gap-3 md:mb-8 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-balance text-2xl font-semibold tracking-tight md:text-3xl">TrendPulse</h1>
-          <p className="text-muted-foreground">
-            Aggregate and explore trending topics by location, category, and source.
+    <main className="p-6">
+      <div className="max-w-7xl mx-auto">
+        <header className="mb-6">
+          <h1 className="text-3xl font-extrabold">TrendPulse Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Monitor trends across Google News, Twitter and YouTube.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link href="/dashboard">Dashboard</Link>
-          </Button>
-        </div>
-      </header>
+        </header>
 
-      <section className="space-y-4">
-        {/* <TrendFilters />
-        <TrendList /> */}
-      </section>
+        <section className="bg-card border rounded-lg p-4 shadow-sm">
+          <Tabs defaultValue="google-news">
+            <TabsList>
+              <TabsTrigger value="google-news"> News</TabsTrigger>
+              <TabsTrigger value="twitter">Twitter Trends</TabsTrigger>
+              <TabsTrigger value="youtube">YouTube Trending</TabsTrigger>
+              <TabsTrigger value="explore">Explore</TabsTrigger>
+              <TabsTrigger value="trending">Trending</TabsTrigger>
+            </TabsList>
+
+            <div className="mt-4 grid grid-cols-1 gap-4">
+              <TabsContent value="google-news">
+                <h2 className="text-xl font-semibold mb-2">News</h2>
+                <div className="bg-background border rounded-lg p-4">
+                  <GoogleNewsPage />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="twitter">
+                <h2 className="text-xl font-semibold mb-2">Twitter Trends</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Live trending topics from Twitter by region and timeframe.
+                </p>
+                <TwitterPage />
+              </TabsContent>
+
+              <TabsContent value="youtube">
+                <h2 className="text-xl font-semibold mb-2">YouTube Trending</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Top trending YouTube videos for selected regions.
+                </p>
+                <YouTubePage />
+              </TabsContent>
+              <TabsContent value="explore">
+                <h2 className="text-xl font-semibold mb-2">Explore</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Top trending YouTube videos for selected regions.
+                </p>
+                <GoogleExplore />
+              </TabsContent>
+              <TabsContent value="trending">
+                <h2 className="text-xl font-semibold mb-2">Google Trending</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Top trending YouTube videos for selected regions.
+                </p>
+                <GoogleTrend />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </section>
+      </div>
     </main>
-  )
-}
+  );
+};
+
+export default DashboardPage;
