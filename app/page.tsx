@@ -50,9 +50,9 @@ const DashboardPage = () => {
               </TabsContent>
               <TabsContent value="explore">
                 <h2 className="text-xl font-semibold mb-2">Explore</h2>
-                <p className="text-sm text-muted-foreground mb-4">
+                {/* <p className="text-sm text-muted-foreground mb-4">
                   Top trending YouTube videos for selected regions.
-                </p>
+                </p> */}
                 <GoogleExplore />
               </TabsContent>
               <TabsContent value="trending">

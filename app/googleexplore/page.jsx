@@ -152,12 +152,12 @@ function Sparkline({ seriesData = {}, width = 320, height = 48 }) {
 
 const Page = () => {
   const [filters, setFilters] = useState({
-    keyword: "bitcoin",
+    keyword: "AI",
     predefinedTimeframe: "today 12-m",
-    geo: "",
+    geo: "IN",
     fetchRegionalData: false,
     enableTrendingSearches: false,
-    trendingSearchesCountry: "US",
+    trendingSearchesCountry: "IN",
     trendingSearchesTimeframe: "24",
   });
 
@@ -166,6 +166,7 @@ const Page = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    console.log(value)
     setFilters((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -194,154 +195,163 @@ fetchData();
   },[])
   return (
     <div className="space-y-6">
+{/* 🔹 Compact Top Filter Bar */}
+<div className="w-full mb-4">
+  <Card className="shadow-sm border border-gray-200">
+    {/* Header */}
+   
+    {/* Content */}
+    <CardContent className="pt-3 px-4 pb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 items-end">
+        {/* Keyword */}
+        <div>
+          <label className="block text-[11px] font-medium mb-1">
+            Keyword
+          </label>
+          <Input
+            name="keyword"
+            value={filters.keyword}
+            onChange={handleChange}
+            placeholder="e.g. bitcoin, AI"
+            disabled={filters.enableTrendingSearches}
+            className="h-8 text-sm"
+          />
+        </div>
+
+        {/* Country */}
+        <div>
+          <label className="block text-[11px] font-medium mb-1">
+            Country
+          </label>
+          <select
+            name="geo"
+            value={filters.geo}
+            onChange={handleChange}
+            disabled={filters.enableTrendingSearches}
+            className="w-full h-8 rounded-md border px-2 text-sm"
+          >
+            <option value="">Select</option>
+            <option value="IN">India</option>
+            <option value="US">United States</option>
+            <option value="GB">United Kingdom</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="JP">Japan</option>
+            <option value="BR">Brazil</option>
+            <option value="SG">Singapore</option>
+            <option value="ZA">South Africa</option>
+          </select>
+        </div>
+
+        {/* Timeframe */}
+        <div>
+          <label className="block text-[11px] font-medium mb-1">
+            Timeframe
+          </label>
+          <select
+            name="predefinedTimeframe"
+            value={filters.predefinedTimeframe}
+            onChange={handleChange}
+            className="w-full h-8 rounded-md border px-2 text-sm"
+            disabled={filters.enableTrendingSearches}
+          >
+            <option value="now 1-h">Past hour</option>
+            <option value="now 4-h">Past 4 hours</option>
+            <option value="now 1-d">Past day</option>
+            <option value="now 7-d">Past 7 days</option>
+            <option value="today 1-m">Past 30 days</option>
+            <option value="today 12-m">Past 12 months</option>
+            <option value="today 5-y">Past 5 years</option>
+            <option value="all">All time</option>
+          </select>
+        </div>
+
+        {/* Regional Data */}
+        {/* <div className="flex items-center gap-2 mt-5">
+          <input
+            type="checkbox"
+            name="fetchRegionalData"
+            checked={filters.fetchRegionalData}
+            onChange={handleChange}
+            disabled={filters.enableTrendingSearches}
+            className="w-4 h-4"
+          />
+          <label className="text-[12px]">Regional Data</label>
+        </div> */}
+   <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 px-3 text-xs"
+          onClick={() =>
+            setFilters({
+              keyword: "",
+              predefinedTimeframe: "today 12-m",
+              geo: "",
+              fetchRegionalData: false,
+              enableTrendingSearches: false,
+              trendingSearchesCountry: "US",
+              trendingSearchesTimeframe: "24",
+            })
+          }
+        >
+          Reset
+        </Button>
+        <Button
+          size="sm"
+          className="h-8 px-3 text-xs"
+          onClick={fetchData}
+          disabled={loading}
+        >
+          {loading ? "Fetching…" : "Apply"}
+        </Button>
+      </div>
+        {/* Trending Country */}
+        {filters.enableTrendingSearches && (
+          <>
+            <div>
+              <label className="block text-[11px] font-medium mb-1">
+                Trending Country
+              </label>
+              <Input
+                name="trendingSearchesCountry"
+                value={filters.trendingSearchesCountry}
+                onChange={handleChange}
+                placeholder="e.g. US"
+                className="h-8 text-sm"
+              />
+            </div>
+
+            {/* Trending Timeframe */}
+            <div>
+              <label className="block text-[11px] font-medium mb-1">
+                Trending Timeframe
+              </label>
+              <select
+                name="trendingSearchesTimeframe"
+                value={filters.trendingSearchesTimeframe}
+                onChange={handleChange}
+                className="w-full h-8 rounded-md border px-2 text-sm"
+              >
+                <option value="4">Last 4 hours</option>
+                <option value="24">Last 24 hours</option>
+                <option value="48">Last 48 hours</option>
+                <option value="168">Last 7 days</option>
+              </select>
+            </div>
+          </>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+</div>
+
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Filters Sidebar */}
-        <aside className="md:col-span-4 lg:col-span-3">
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold">Google Trends Filters</h4>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setFilters({
-                      keyword: "",
-                      predefinedTimeframe: "today 12-m",
-                      geo: "",
-                      fetchRegionalData: false,
-                      enableTrendingSearches: false,
-                      trendingSearchesCountry: "US",
-                      trendingSearchesTimeframe: "24",
-                    })
-                  }
-                >
-                  Reset
-                </Button>
-                <Button size="sm" onClick={fetchData} disabled={loading}>
-                  {loading ? "Fetching…" : "Apply"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium mb-1">
-                    Keyword
-                  </label>
-                  <Input
-                    name="keyword"
-                    value={filters.keyword}
-                    onChange={handleChange}
-                    placeholder="e.g. bitcoin, AI"
-                    disabled={filters.enableTrendingSearches}
-                  />
-                </div>
-<div>
-  <label className="block text-xs font-medium mb-1">
-    Country (geo)
-  </label>
-  <select
-    name="geo"
-    value={filters.geo}
-    onChange={handleChange}
-    disabled={filters.enableTrendingSearches}
-    className="w-full rounded-md border px-3 py-2"
-  >
-    <option value="">Select Country</option>
-    <option value="IN">India</option>
-    <option value="US">United States</option>
-    <option value="GB">United Kingdom</option>
-    <option value="CA">Canada</option>
-    <option value="AU">Australia</option>
-    <option value="DE">Germany</option>
-    <option value="FR">France</option>
-    <option value="JP">Japan</option>
-    <option value="BR">Brazil</option>
-    <option value="SG">Singapore</option>
-    <option value="ZA">South Africa</option>
-  </select>
-</div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">
-                    Predefined Timeframe
-                  </label>
-                  <select
-                    name="predefinedTimeframe"
-                    value={filters.predefinedTimeframe}
-                    onChange={handleChange}
-                    className="w-full rounded-md border px-3 py-2"
-                    disabled={filters.enableTrendingSearches}
-                  >
-                    <option value="now 1-h">Past hour</option>
-                    <option value="now 4-h">Past 4 hours</option>
-                    <option value="now 1-d">Past day</option>
-                    <option value="now 7-d">Past 7 days</option>
-                    <option value="today 1-m">Past 30 days</option>
-                    <option value="today 12-m">Past 12 months</option>
-                    <option value="today 5-y">Past 5 years</option>
-                    <option value="all">All time</option>
-                  </select>
-                </div>
+   {/* 🔹 Horizontal Filter Bar */}
 
-             
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="fetchRegionalData"
-                    checked={filters.fetchRegionalData}
-                    onChange={handleChange}
-                    disabled={filters.enableTrendingSearches}
-                  />
-                  <label className="text-xs">Fetch Regional Data</label>
-                </div>
-
-                {/* <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="enableTrendingSearches"
-                    checked={filters.enableTrendingSearches}
-                    onChange={handleChange}
-                  />
-                  <label className="text-xs">Enable Trending Searches</label>
-                </div> */}
-
-                {filters.enableTrendingSearches && (
-                  <>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Trending Searches Country
-                      </label>
-                      <Input
-                        name="trendingSearchesCountry"
-                        value={filters.trendingSearchesCountry}
-                        onChange={handleChange}
-                        placeholder="e.g. US"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Trending Searches Timeframe
-                      </label>
-                      <select
-                        name="trendingSearchesTimeframe"
-                        value={filters.trendingSearchesTimeframe}
-                        onChange={handleChange}
-                        className="w-full rounded-md border px-3 py-2"
-                      >
-                        <option value="4">Last 4 hours</option>
-                        <option value="24">Last 24 hours</option>
-                        <option value="48">Last 48 hours</option>
-                        <option value="168">Last 7 days</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </aside>
 
         {/* Results */}
         <main className="md:col-span-8 lg:col-span-9">
