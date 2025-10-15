@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 const Page = () => {
   const [filters, setFilters] = useState({
     enableTrendingSearches: true,
-    trendingSearchesCountry: "US",
+    trendingSearchesCountry: "IN",
     trendingSearchesTimeframe: "24",
   });
 
@@ -132,16 +132,7 @@ fetchData();
                   <div className="mb-3 space-y-1 text-sm text-muted-foreground">
                    
 
-                    {item.trends_url && (
-                      <a
-                        href={item.trends_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline text-sm block mt-1"
-                      >
-                        Open on Google Trends →
-                      </a>
-                    )}
+                    
                   </div>
 
                   {/* Table */}

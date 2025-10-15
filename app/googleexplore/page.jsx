@@ -409,18 +409,7 @@ fetchData();
                           Timeframe: {item.timeframe} · Granularity:{" "}
                           {item.data_granularity}
                         </p>
-                        {item.trends_url && (
-                          <p className="text-sm mt-1">
-                            <a
-                              href={item.trends_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline"
-                            >
-                              Open in Google Trends
-                            </a>
-                          </p>
-                        )}
+                      
 
                         {item.language && (
                           <div className="text-xs text-muted-foreground mt-2">
