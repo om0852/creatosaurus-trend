@@ -12,9 +12,7 @@ const DashboardPage = () => {
       <div className="max-w-7xl mx-auto">
         <header className="mb-6">
           <h1 className="text-3xl font-extrabold">TrendPulse Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Monitor trends across Google News, Twitter and YouTube.
-          </p>
+         
         </header>
 
         <section className="bg-card border rounded-lg p-4 shadow-sm">
@@ -58,10 +56,7 @@ const DashboardPage = () => {
                 <GoogleExplore />
               </TabsContent>
               <TabsContent value="trending">
-                <h2 className="text-xl font-semibold mb-2">Google Trending</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Top trending YouTube videos for selected regions.
-                </p>
+               
                 <GoogleTrend />
               </TabsContent>
             </div>

@@ -10,13 +10,12 @@ const DashboardPage = () => {
       <div className="max-w-7xl mx-auto">
         <header className="mb-6">
           <h1 className="text-3xl font-extrabold">TrendPulse Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Monitor trends across Google News, Twitter and YouTube.</p>
         </header>
 
         <section className="bg-card border rounded-lg p-4 shadow-sm">
           <Tabs defaultValue="google-news">
             <TabsList>
-              <TabsTrigger value="google-news">Google News</TabsTrigger>
+              <TabsTrigger value="google-news">News</TabsTrigger>
               <TabsTrigger value="twitter">Twitter Trends</TabsTrigger>
               <TabsTrigger value="youtube">YouTube Trending</TabsTrigger>
             </TabsList>

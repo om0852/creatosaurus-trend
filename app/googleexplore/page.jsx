@@ -189,6 +189,9 @@ const Page = () => {
     }
   };
 
+  useEffect(()=>{
+fetchData();
+  },[])
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -234,7 +237,31 @@ const Page = () => {
                     disabled={filters.enableTrendingSearches}
                   />
                 </div>
-
+<div>
+  <label className="block text-xs font-medium mb-1">
+    Country (geo)
+  </label>
+  <select
+    name="geo"
+    value={filters.geo}
+    onChange={handleChange}
+    disabled={filters.enableTrendingSearches}
+    className="w-full rounded-md border px-3 py-2"
+  >
+    <option value="">Select Country</option>
+    <option value="IN">India</option>
+    <option value="US">United States</option>
+    <option value="GB">United Kingdom</option>
+    <option value="CA">Canada</option>
+    <option value="AU">Australia</option>
+    <option value="DE">Germany</option>
+    <option value="FR">France</option>
+    <option value="JP">Japan</option>
+    <option value="BR">Brazil</option>
+    <option value="SG">Singapore</option>
+    <option value="ZA">South Africa</option>
+  </select>
+</div>
                 <div>
                   <label className="block text-xs font-medium mb-1">
                     Predefined Timeframe
@@ -257,18 +284,7 @@ const Page = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium mb-1">
-                    Country (geo)
-                  </label>
-                  <Input
-                    name="geo"
-                    value={filters.geo}
-                    onChange={handleChange}
-                    placeholder="e.g. US, IN"
-                    disabled={filters.enableTrendingSearches}
-                  />
-                </div>
+             
 
                 <div className="flex items-center gap-2">
                   <input

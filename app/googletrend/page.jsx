@@ -1,161 +1,10 @@
 "use client";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import React, { useRef, useMemo, useState, useEffect } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
-
-function Sparkline({ seriesData = {}, width = 320, height = 48 }) {
-  const containerRef = useRef(null);
-  const [hover, setHover] = useState(null); // {index, x, y, date, value}
-
-  const entries = useMemo(
-    () => Object.entries(seriesData || {}).filter(([k]) => k !== "isPartial"),
-    [seriesData]
-  );
-  if (!entries.length) return null;
-
-  // For now render the first series only (most responses have one series like 'ai')
-  const [seriesKey, seriesDataMap] = entries[0];
-  const pointsArr = useMemo(
-    () => Object.entries(seriesDataMap || {}),
-    [seriesDataMap]
-  );
-  const values = pointsArr.map(([, v]) => Number(v) || 0);
-  const dates = pointsArr.map(([d]) => d);
-
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const len = values.length;
-  const step = len > 1 ? width / (len - 1) : width;
-
-  const coords = values.map((val, i) => {
-    const x = i * step;
-    const y =
-      max === min ? height / 2 : height - ((val - min) / (max - min)) * height;
-    return {
-      x,
-      y,
-      date: dates[i],
-      value: values[i],
-      isPartial: !!(seriesData?.isPartial && seriesData.isPartial[dates[i]]),
-    };
-  });
-
-  const polyPoints = coords.map((p) => `${p.x},${p.y}`).join(" ");
-  const areaD =
-    coords.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") +
-    ` L ${width} ${height} L 0 ${height} Z`;
-
-  // mouse handlers
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    function onLeave() {
-      setHover(null);
-    }
-    el.addEventListener("mouseleave", onLeave);
-    return () => el.removeEventListener("mouseleave", onLeave);
-  }, []);
-
-  function handleMove(e) {
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left; // x relative to svg
-    // find nearest index
-    const idx = Math.round((x / width) * (len - 1));
-    const clamped = Math.max(0, Math.min(len - 1, idx));
-    const p = coords[clamped];
-    if (p) {
-      setHover({
-        index: clamped,
-        x: p.x,
-        y: p.y,
-        date: p.date,
-        value: p.value,
-        isPartial: p.isPartial,
-        clientX: e.clientX,
-        clientY: e.clientY,
-      });
-    }
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      className="relative w-full"
-      onMouseMove={handleMove}
-      onMouseEnter={(e) => handleMove(e)}
-    >
-      <svg
-        width={width}
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        className="w-full h-auto text-foreground"
-      >
-        <path d={areaD} fill="rgba(99,102,241,0.06)" />
-        <polyline
-          points={polyPoints}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {hover && (
-          <>
-            <line
-              x1={hover.x}
-              x2={hover.x}
-              y1={0}
-              y2={height}
-              stroke="rgba(107,114,128,0.12)"
-              strokeWidth={1}
-            />
-            <circle
-              cx={hover.x}
-              cy={hover.y}
-              r={3.5}
-              fill="white"
-              stroke="currentColor"
-              strokeWidth={1.25}
-            />
-          </>
-        )}
-      </svg>
-
-      {hover && (
-        <div
-          className="absolute z-10 pointer-events-none bg-popover text-popover-foreground rounded-md shadow px-2 py-1 text-xs"
-          style={{
-            left: Math.min(Math.max(hover.x - 40, 8), (width || 320) - 96),
-          }}
-        >
-          <div className="font-medium">{hover.value}</div>
-          <div className="text-muted-foreground">
-            {hover.date}
-            {hover.isPartial ? " • partial" : ""}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+import React, { useEffect, useState } from "react";
 
 const Page = () => {
   const [filters, setFilters] = useState({
-    keyword: "bitcoin",
-    predefinedTimeframe: "today 12-m",
-    geo: "",
-    fetchRegionalData: false,
     enableTrendingSearches: true,
     trendingSearchesCountry: "US",
     trendingSearchesTimeframe: "24",
@@ -163,13 +12,11 @@ const Page = () => {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedTerms, setSelectedTerms] = useState(null); // for modal
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const fetchData = async () => {
@@ -181,7 +28,7 @@ const Page = () => {
         body: JSON.stringify(filters),
       });
       const result = await res.json();
-      setData(result || []);
+      setData(Array.isArray(result) ? result : [result]);
     } catch (err) {
       console.error("Error:", err);
     } finally {
@@ -189,272 +36,211 @@ const Page = () => {
     }
   };
 
+  useEffect(()=>{
+fetchData();
+  },[])
+  const resetFilters = () => {
+    setFilters({
+      enableTrendingSearches: true,
+      trendingSearchesCountry: "in",
+      trendingSearchesTimeframe: "24",
+    });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Filters Sidebar */}
-        <aside className="md:col-span-4 lg:col-span-3">
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold">Google Trends Filters</h4>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setFilters({
-                      keyword: "",
-                      predefinedTimeframe: "today 12-m",
-                      geo: "",
-                      fetchRegionalData: false,
-                      enableTrendingSearches: false,
-                      trendingSearchesCountry: "US",
-                      trendingSearchesTimeframe: "24",
-                    })
-                  }
-                >
-                  Reset
-                </Button>
-                <Button size="sm" onClick={fetchData} disabled={loading}>
-                  {loading ? "Fetching…" : "Apply"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium mb-1">
-                    Keyword
-                  </label>
-                  <Input
-                    name="keyword"
-                    value={filters.keyword}
-                    onChange={handleChange}
-                    placeholder="e.g. bitcoin, AI"
-                    disabled={filters.enableTrendingSearches}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium mb-1">
-                    Predefined Timeframe
-                  </label>
-                  <select
-                    name="predefinedTimeframe"
-                    value={filters.predefinedTimeframe}
-                    onChange={handleChange}
-                    className="w-full rounded-md border px-3 py-2"
-                    disabled={filters.enableTrendingSearches}
-                  >
-                    <option value="now 1-h">Past hour</option>
-                    <option value="now 4-h">Past 4 hours</option>
-                    <option value="now 1-d">Past day</option>
-                    <option value="now 7-d">Past 7 days</option>
-                    <option value="today 1-m">Past 30 days</option>
-                    <option value="today 12-m">Past 12 months</option>
-                    <option value="today 5-y">Past 5 years</option>
-                    <option value="all">All time</option>
-                  </select>
-                </div>
-
-              
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="fetchRegionalData"
-                    checked={filters.fetchRegionalData}
-                    onChange={handleChange}
-                    disabled={filters.enableTrendingSearches}
-                  />
-                  <label className="text-xs">Fetch Regional Data</label>
-                </div>
-
-                {filters.enableTrendingSearches && (
-                  <>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Trending Searches Country 
-                      </label>
-                      <Input
-                        name="trendingSearchesCountry"
-                        value={filters.trendingSearchesCountry}
-                        onChange={handleChange}
-                        placeholder="e.g. US"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Trending Searches Timeframe
-                      </label>
-                      <select
-                        name="trendingSearchesTimeframe"
-                        value={filters.trendingSearchesTimeframe}
-                        onChange={handleChange}
-                        className="w-full rounded-md border px-3 py-2"
-                      >
-                        <option value="4">Last 4 hours</option>
-                        <option value="24">Last 24 hours</option>
-                        <option value="48">Last 48 hours</option>
-                        <option value="168">Last 7 days</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </aside>
-
-        {/* Results */}
-        <main className="md:col-span-8 lg:col-span-9">
-          <div className="flex items-center justify-between mb-4">
+      {/* 🔹 Filter Bar */}
+      <Card className="p-4 shadow-sm border border-gray-200">
+        <div className="flex flex-wrap items-end gap-4 justify-between">
+          <div className="flex flex-wrap gap-4 items-end">
             <div>
-              <h3 className="text-lg font-semibold"> Trends Results</h3>
-              <p className="text-sm text-muted-foreground">
-                View current trending or keyword-based analysis data.
-              </p>
+              <label className="block text-xs font-medium mb-1">Country</label>
+              <select
+                name="trendingSearchesCountry"
+                value={filters.trendingSearchesCountry}
+                onChange={handleChange}
+                className="w-44 rounded-md border px-3 py-2"
+              >
+                <option value="US">United States</option>
+                <option value="IN">India</option>
+                <option value="GB">United Kingdom</option>
+                <option value="CA">Canada</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="JP">Japan</option>
+                <option value="BR">Brazil</option>
+                <option value="SG">Singapore</option>
+                <option value="ZA">South Africa</option>
+              </select>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {!loading && `${data.length} results`}
+
+            <div>
+              <label className="block text-xs font-medium mb-1">Timeframe</label>
+              <select
+                name="trendingSearchesTimeframe"
+                value={filters.trendingSearchesTimeframe}
+                onChange={handleChange}
+                className="w-44 rounded-md border px-3 py-2"
+              >
+                <option value="4">Last 4 hours</option>
+                <option value="24">Last 24 hours</option>
+                <option value="48">Last 48 hours</option>
+                <option value="168">Last 7 days</option>
+              </select>
             </div>
           </div>
 
-          <section>
-            {loading && (
-              <div className="text-sm text-muted-foreground">Loading data…</div>
-            )}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={resetFilters}>
+              Reset
+            </Button>
+            <Button onClick={fetchData} disabled={loading}>
+              {loading ? "Fetching…" : "Apply"}
+            </Button>
+          </div>
+        </div>
+      </Card>
 
-            {!loading && data.length > 0 && (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {data.map((item, i) => (
-                  <article
-                    key={i}
-                    className="w-[100vh] border rounded-xl shadow-sm overflow-hidden hover:shadow-md transition bg-card p-4"
-                  >
-                    {item.trending_searches ? (
-                      <>
-                        <h4 className="font-semibold mb-2">
-                          Trending in {item.geo}
-                        </h4>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm table-fixed">
-                            <thead>
-                              <tr className="text-left text-xs text-muted-foreground">
-                                <th className="py-2 w-12">#</th>
-                                <th className="py-2">Term</th>
-                                <th className="py-2 w-28">Volume</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {item.trending_searches.map((t, idx) => (
-                                <tr key={idx} className="border-b last:border-b-0">
-                                  <td className="py-2 pr-4 text-muted-foreground align-top">{t.rank}</td>
-                                  <td className="py-2 align-top">
-                                    <div className="font-medium">{t.term}</div>
-                                
-                                  </td>
-                                  <td className="py-2 text-xs text-muted-foreground align-top">{t.trend_volume ?? '—'}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <h4 className="font-semibold mb-2">{item.keyword}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Timeframe: {item.timeframe} · Granularity:{" "}
-                          {item.data_granularity}
-                        </p>
-                        {item.trends_url && (
-                          <p className="text-sm mt-1">
-                            <a
-                              href={item.trends_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline"
-                            >
-                              Open in Google Trends
-                            </a>
-                          </p>
-                        )}
+      {/* 🔹 Results Section */}
+      <main className="w-full">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Trending Results</h3>
+            <p className="text-sm text-muted-foreground">
+              View real-time Google trending searches by country.
+            </p>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {!loading && `${data.length} result${data.length > 1 ? "s" : ""}`}
+          </div>
+        </div>
 
-                        {item.language && (
-                          <div className="text-xs text-muted-foreground mt-2">
-                            Language: {item.language}
-                          </div>
-                        )}
+        <section className="w-full">
+          {loading && (
+            <div className="text-sm text-muted-foreground">Loading data…</div>
+          )}
 
-                        {Array.isArray(item.region_data) &&
-                          item.region_data.length > 0 && (
-                            <div className="text-xs text-muted-foreground mt-2">
-                              Regional data: {item.region_data.length} entries
-                            </div>
-                          )}
+          {!loading && data.length > 0 && (
+            <div className="grid gap-6">
+              {data.map((item, i) => (
+                <article
+                  key={i}
+                  className="border rounded-xl shadow-sm bg-card p-4 hover:shadow-md transition"
+                >
+                  {/* Meta Info */}
+                  <div className="mb-3 space-y-1 text-sm text-muted-foreground">
+                   
 
-                        {/* Full Timeline Chart (Recharts) */}
-                        <div className="mt-4">
-                          {(() => {
-                            const seriesKey = Object.keys(item.timeline_data || {}).find(
-                              (k) => k !== "isPartial"
-                            );
-                            const series = item.timeline_data?.[seriesKey] || {};
-                            const chartData = Object.entries(series)
-                              .map(([date, value]) => ({ date, value: Number(value) }))
-                              .sort((a, b) => a.date.localeCompare(b.date));
+                    {item.trends_url && (
+                      <a
+                        href={item.trends_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline text-sm block mt-1"
+                      >
+                        Open on Google Trends →
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Table */}
+                  {item.trending_searches && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm min-w-[600px] border-collapse">
+                        <thead>
+                          <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="py-2 px-3">#</th>
+                            <th className="py-2 px-3">Term</th>
+                            <th className="py-2 px-3">Volume</th>
+                            <th className="py-2 px-3">Related Terms</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {item.trending_searches.map((t, idx) => {
+                            const showTerms = t.related_terms?.slice(0, 3) || [];
+                            const hasMore =
+                              t.related_terms &&
+                              t.related_terms.length > showTerms.length;
 
                             return (
-                              <ResponsiveContainer width="100%" height={220}>
-                                <LineChart data={chartData} margin={{ top: 8, right: 12, left: -8, bottom: 20 }}>
-                                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} />
-                                  <XAxis
-                                    dataKey="date"
-                                    tick={{ fontSize: 11 }}
-                                    tickFormatter={(d) => {
-                                      // show MM-DD for long ISO dates
-                                      try {
-                                        return d?.slice(5);
-                                      } catch (e) {
-                                        return d;
-                                      }
-                                    }}
-                                    interval={Math.max(0, Math.floor(chartData.length / 6))}
-                                  />
-                                  <YAxis tick={{ fontSize: 11,color:"red" }} domain={["auto", "auto"]} />
-                                  <Tooltip
-                                    contentStyle={{
-                                      backgroundColor: "white",
-                                      border: "1px solid black",
-                                      borderRadius: 8,
-                                      fontSize: 12,
-                                    }}
-                                    labelFormatter={(label) => `Date: ${label}`}
-                                    formatter={(value) => [value, "Value"]}
-                                  />
-                                  <Line type="monotone" dataKey="value" stroke="black" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                                </LineChart>
-                              </ResponsiveContainer>
+                              <tr
+                                key={idx}
+                                className="border-b hover:bg-gray-50 transition-colors"
+                              >
+                                <td className="py-2 px-3 text-gray-500">
+                                  {t.rank}
+                                </td>
+                                <td className="py-2 px-3 font-medium text-gray-800">
+                                  {t.term}
+                                </td>
+                                <td className="py-2 px-3 text-gray-600">
+                                  {t.trend_volume || "—"}
+                                </td>
+                                <td className="py-2 px-3 text-gray-600">
+                                  {showTerms.length > 0 ? (
+                                    <>
+                                      <ul className="list-disc list-inside space-y-1">
+                                        {showTerms.map((rel, j) => (
+                                          <li key={j} className="text-xs">
+                                            {rel}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                      {hasMore && (
+                                        <button
+                                          onClick={() =>
+                                            setSelectedTerms(t.related_terms)
+                                          }
+                                          className="text-blue-600 text-xs underline mt-1"
+                                        >
+                                          Show more
+                                        </button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </td>
+                              </tr>
                             );
-                          })()}
-                        </div>
-                      </>
-                    )}
-                  </article>
-                ))}
-              </div>
-            )}
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
 
-            {!loading && data.length === 0 && (
-              <div className="rounded-md border border-dashed p-6 text-center text-muted-foreground">
-                No data found. Click <span className="font-medium">Apply</span>{" "}
-                to fetch results.
-              </div>
-            )}
-          </section>
-        </main>
-      </div>
+          {!loading && data.length === 0 && (
+            <div className="rounded-md border border-dashed p-6 text-center text-muted-foreground">
+              No data found. Click <span className="font-medium">Apply</span> to
+              fetch results.
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* 🔹 Popup Modal for Related Terms */}
+      {selectedTerms && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg w-96 max-w-[90%] p-5 relative">
+            <h3 className="text-lg font-semibold mb-3">
+              Related Search Terms
+            </h3>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 max-h-60 overflow-y-auto">
+              {selectedTerms.map((term, i) => (
+                <li key={i}>{term}</li>
+              ))}
+            </ul>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={() => setSelectedTerms(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

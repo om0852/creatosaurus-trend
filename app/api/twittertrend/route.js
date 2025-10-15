@@ -1,50 +1,36 @@
 import { NextResponse } from "next/server";
 import { ApifyClient } from "apify-client";
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const country = searchParams.get("country") || "2"; // Default: USA
-  const duration = searchParams.get("duration") || "live"; // Default: Live
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const country = searchParams.get("country") || "worldwide";
+
+  const client = new ApifyClient({
+    token: process.env.APIFY_API_TOKEN, // Set in .env.local
+  });
 
   try {
-    const client = new ApifyClient({
-      token: process.env.APIFY_API_TOKEN,
-    });
+    const input = { country };
 
-    // Base input
-    const input = {
-      country,
-      live: false,
-      hour1: false,
-      hour3: false,
-      hour6: false,
-      hour12: false,
-      hour24: false,
-      day2: false,
-      day3: false,
-      proxyOptions: { useApifyProxy: true },
-    };
+    // Run the Apify actor
+    const run = await client
+      .actor("fastcrawler/x-twitter-trends-scraper-0-5-1k-results-pay-per-result-2025")
+      .call(input);
 
-    // Enable correct duration flag
-    if (duration === "live") input.live = true;
-    else if (duration === "1h") input.hour1 = true;
-    else if (duration === "3h") input.hour3 = true;
-    else if (duration === "6h") input.hour6 = true;
-    else if (duration === "12h") input.hour12 = true;
-    else if (duration === "24h") input.hour24 = true;
-    else if (duration === "2d") input.day2 = true;
-    else if (duration === "3d") input.day3 = true;
-
-    // Run the actor
-    const run = await client.actor("oCAEibQtPGKXcF5MM").call(input);
+    // Fetch dataset results
     const { items } = await client.dataset(run.defaultDatasetId).listItems();
-console.log("items",items)
-    return NextResponse.json(items);
+
+    // Clean up data for frontend
+    const formatted = items.map((item) => ({
+      rank: item.rank,
+      topic: item.topic,
+      tweet_volume: item.tweet_volume,
+      last_updated: item.last_updated,
+    }));
+
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error fetching trends:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch trends", details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch Twitter trends" }, { status: 500 });
   }
 }

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 export default function YouTubeTrending() {
   const [videos, setVideos] = useState([])
-  const [region, setRegion] = useState('us')
+  const [region, setRegion] = useState('in')
   const [hl, setHl] = useState('en')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

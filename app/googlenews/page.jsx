@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -31,10 +31,10 @@ const Page = () => {
   const [filters, setFilters] = useState({
     query: '',
     maxItems: 100,
-    gl: 'us',
+    gl: 'in',
     hl: 'en',
     lr: 'lang_en',
-    cr: 'us',
+    cr: 'in',
     time_period: 'last_week',
   })
 
@@ -45,7 +45,9 @@ const Page = () => {
     const { name, value } = e.target
     setFilters((prev) => ({ ...prev, [name]: value }))
   }
-
+useEffect(()=>{
+fetchData();
+},[])
   const fetchData = async () => {
     setLoading(true)
     try {
@@ -136,8 +138,7 @@ const Page = () => {
         <main className="md:col-span-8 lg:col-span-9">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-lg font-semibold">Google News · Trending</h3>
-              <p className="text-sm text-muted-foreground">Results are provided by the Google News scraper. Use filters to refine results.</p>
+              <h3 className="text-lg font-semibold"> News · Trending</h3>
             </div>
             <div className="text-sm text-muted-foreground">{!loading && `${data.length} results`}</div>
           </div>
