@@ -52,23 +52,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex justify-center">
       <div className="max-w-5xl w-full space-y-8">
-        <div className="flex flex-col items-center mb-6">
-          <div className="flex items-center gap-2">
-            <Globe2 className="text-blue-600 w-7 h-7" />
-            <h1 className="text-3xl font-bold text-gray-800">Twitter Trends</h1>
-          </div>
-          <p className="text-gray-500 text-sm mt-2">
-            Discover what’s trending across different regions and durations.
-          </p>
-        </div>
-
+       
         <Card className="shadow-md border border-gray-200">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Filter Trends</h3>
-              <p className="text-sm text-gray-500">
-                Select country and time duration to explore real-time trends.
-              </p>
+           
             </div>
             <div className="flex gap-2">
               <Button
